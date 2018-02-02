@@ -95,13 +95,10 @@ def checkEndgame(categories):
 
 def make_scoreboard(players):
   embed=discord.Embed(color=0x2a25ff)
-  stats = getPlayerStats(players)
-  scores = ""
-  for i, contestant in enumerate(players):
-    scores += "{}: {} points\n".format(stats['contestants'][i], stats['scores'][i])
-  embed.add_field(
-    name="Scoreboard", value= scores 
-  )
+  for contestant in players:
+    embed.add_field(
+      name=players[contestant]['name'], value=players[contestant]['points']
+    )
   return embed
 
 def __make_board(categories):
@@ -139,7 +136,7 @@ async def getGuess(guesser, channel):
 async def checkGuess(players, guess, clue, channel, priority):
   if fuzz.ratio(guess.content.lower(), clue['answer'].lower()) > 80:
     await client.send_message(channel, 'CORRECT! You get {} points!'.format(clue['value']))
-    players[guess.author.id]['points'] += 200
+    players[guess.author.id]['points'] += clue['value']
     return {
       'answer': "correct",
       'prio': players[guess.author.id]
@@ -197,7 +194,7 @@ async def jeopardy(message,params):
   participant_message = await client.send_message(message.channel, 'Playing: {}'.format(__map_to_mentions(players)))
   for i in range(2):
     join_message = await client.wait_for_message(channel=message.channel, content=">join")
-    if join_message.author not in players:
+    if join_message.author.id not in players:
       players[join_message.author.id] = {
         'user':join_message.author,
         'points': 0,
@@ -220,7 +217,10 @@ async def jeopardy(message,params):
     if finished == True: 
       break
     await getBoard(categories, selection_priority, message.channel, players)
-    category_selection = await client.wait_for_message(channel=message.channel, check=lambda x: get_selection(x) == True)
+    category_selection = await client.wait_for_message(channel=message.channel, check=lambda x: get_selection(x) == True, timeout= 120)
+    if not category_selection:
+      await client.send_message(message.channel, 'You took too long, baka')
+      break
     choice = messageToClue(category_selection, categories)
     if 'solved' in choice['clue']:
       await client.send_message(message.channel, 'We already did that one, baka')

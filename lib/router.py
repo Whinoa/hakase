@@ -1,6 +1,7 @@
 import asyncio
 import importlib
 
+from lib.client import client
 from lib.responses import misc
 # from lib.responses import games
 from lib.responses import jeopardy
@@ -25,15 +26,15 @@ async def list_responses(message,params):
 
 response_list = {
   '>': {
-    'rand': misc.rand,
-    'help': list_responses,
+    # 'rand': misc.rand,
     'jeopardy': jeopardy.jeopardy
+    # 'help': list_responses
   },
   '-':{
-    'rand': misc.rand
+    # 'rand': misc.rand
   },
   'bare': {
-    'ayy': misc.ayy
+    # 'ayy': misc.ayy
   }
 }
 
