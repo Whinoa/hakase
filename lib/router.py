@@ -5,6 +5,7 @@ from lib.client import client
 from lib.responses import misc
 # from lib.responses import games
 from lib.responses import jeopardy
+from lib.responses import race
 
 importlib.reload(misc)
 # importlib.reload(games)
