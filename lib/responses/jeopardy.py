@@ -53,8 +53,6 @@ def __get_clues():
     candidate['clues'] = selected_clues
     if __validate_category(candidate):
       final_categories.append(candidate)
-    else:
-      print('Not valid')
 
   return final_categories
 
