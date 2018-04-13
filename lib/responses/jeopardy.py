@@ -53,8 +53,6 @@ def __get_clues():
     candidate['clues'] = selected_clues
     if __validate_category(candidate):
       final_categories.append(candidate)
-    else:
-      print('Not valid')
 
   return final_categories
 
@@ -134,7 +132,7 @@ async def getGuess(guesser, channel):
   return guess
 
 async def checkGuess(players, guess, clue, channel, priority):
-  if fuzz.ratio(guess.content.lower(), clue['answer'].lower()) > 80:
+  if fuzz.partial_ratio(guess.content.lower(), clue['answer'].lower()) > 80:
     await client.send_message(channel, 'CORRECT! You get {} points!'.format(clue['value']))
     players[guess.author.id]['points'] += clue['value']
     return {
@@ -168,7 +166,7 @@ def getPlayerStats(players):
 def getWinner(players):
   finalscores = []
   stats = getPlayerStats(players)
-  for i, person in enumerate(players):
+  for i in enumerate(players):
     finalscores.append(stats['scores'][i])
   return {
     'contestant': stats['contestants'][finalscores.index(max(finalscores))],
