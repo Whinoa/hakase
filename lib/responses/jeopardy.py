@@ -166,7 +166,7 @@ def getPlayerStats(players):
 def getWinner(players):
   finalscores = []
   stats = getPlayerStats(players)
-  for i, person in enumerate(players):
+  for i in enumerate(players):
     finalscores.append(stats['scores'][i])
   return {
     'contestant': stats['contestants'][finalscores.index(max(finalscores))],
@@ -210,7 +210,7 @@ async def jeopardy(message,params):
     else:
       return False
    
-while not finished:
+  while not finished:
     finished = checkEndgame(categories)
     if finished == True: 
       break
