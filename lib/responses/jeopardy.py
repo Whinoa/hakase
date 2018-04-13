@@ -134,7 +134,7 @@ async def getGuess(guesser, channel):
   return guess
 
 async def checkGuess(players, guess, clue, channel, priority):
-  if fuzz.ratio(guess.content.lower(), clue['answer'].lower()) > 80:
+  if fuzz.partial_ratio(guess.content.lower(), clue['answer'].lower()) > 80:
     await client.send_message(channel, 'CORRECT! You get {} points!'.format(clue['value']))
     players[guess.author.id]['points'] += clue['value']
     return {
@@ -212,7 +212,7 @@ async def jeopardy(message,params):
     else:
       return False
    
-  while not finished:
+while not finished:
     finished = checkEndgame(categories)
     if finished == True: 
       break
