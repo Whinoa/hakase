@@ -22,13 +22,12 @@ async def qtb(message, params):
     return
   ongoing_qtb.append(message.channel)
 
-  caller= discord.User()
+  caller= message.author
   girls= [QtAnimeGirl(), QtAnimeGirl()]
   vote= discord.Message(reactions=[])
   votes= [0, 0]
   voters= {}
   is_ongoing= True
-  time_start= datetime.datetime.now()
 
   all_girls= []
 
@@ -56,7 +55,7 @@ async def qtb(message, params):
     await client.send_typing(message.channel)
     await client.send_file(message.channel,
       open(os.path.join(config['image_directory'], girl.image), 'rb'),
-      filename= girls.image,
+      filename= girl.image,
       content= '{0} with a {1} ranking'.format(girl, girl.elo)
     )
   
@@ -68,7 +67,18 @@ async def qtb(message, params):
   vote = await client.send_message(message.channel,
     '{0} vs {1} - 0 - 0'.format(girls[0], girls[1])
   )
-  time_start = datetime.datetime.now()
+
+  while is_ongoing:
+    action = await client.wait_for_message(channel= message.channel, check= lambda msg: msg.startswith('>vote'))
+    # Gets first digit
+    # See: https://stackoverflow.com/a/20008559
+    action_vote = [char.isdigit() for char in action.content].index(True)
+    
+    if action_vote in [1,2]:
+      if action.author.id not in voters or action_vote != voters[action.author.id]:
+        votes[action_vote - 1] += 1
+    await client.edit_message(vote, new_content='{0} vs {1} - {2} - {3}'.format(girls[0],girls[1],votes[0],votes[1]))
+
 
   
 
