@@ -6,3 +6,7 @@
 \.vscode/
 
 config
+
+images/
+
+db\.sqlite3
