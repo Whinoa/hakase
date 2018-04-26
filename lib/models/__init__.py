@@ -7,7 +7,6 @@ DBSession = sessionmaker(bind=engine)
 session = DBSession()
 Base = declarative_base()
 metadata = Base.metadata
-metadata.create_all(engine)
 
 girl_tag_association_table = Table('girldatabase_qtanimegirl_tags',Base.metadata,
   Column('qtanimegirl_id', Integer, ForeignKey('girldatabase_qtanimegirl.id'), nullable=False, index=True),
@@ -16,3 +15,5 @@ girl_tag_association_table = Table('girldatabase_qtanimegirl_tags',Base.metadata
 
 from .qt_anime_girl import QtAnimeGirl
 from .tag import Tag
+
+metadata.create_all(engine)

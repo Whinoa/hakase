@@ -7,6 +7,7 @@ import re
 from fuzzywuzzy import fuzz
 from fuzzywuzzy import process
 from lib.client import client
+import lib.models
 
 def __validate_category(category):
   clues = category['clues']

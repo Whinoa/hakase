@@ -5,10 +5,12 @@ from lib.client import client
 from lib.responses import misc
 # from lib.responses import games
 from lib.responses import jeopardy
+from lib.responses import qtb
 
 importlib.reload(misc)
 # importlib.reload(games)
 importlib.reload(jeopardy)
+importlib.reload(qtb)
 
 async def list_responses(message,params):
   # Assumes 1 level deep nesting
@@ -25,16 +27,20 @@ async def list_responses(message,params):
   return list
 
 response_list = {
-  '>': {
-    # 'rand': misc.rand,
-    'jeopardy': jeopardy.jeopardy
-    # 'help': list_responses
+  '=': {
+    'rand': misc.rand,
+    'jeopardy': jeopardy.jeopardy,
+    'help': list_responses
   },
   '-':{
-    # 'rand': misc.rand
+    'rand': misc.rand
+  },
+  '+':{
+    'qtb': qtb.qtb,
+    'getnewgirls': qtb.get_new_girls
   },
   'bare': {
-    # 'ayy': misc.ayy
+    'ayy': misc.ayy
   }
 }
 
@@ -45,7 +51,7 @@ def route(key):
   target = False
   key = key.lower()
   if key[0] in response_list and key[1:] in response_list[key[0]]:
-    target = response_list['>'][key[1:]]
+    target = response_list[key[0]][key[1:]]
   elif key in response_list['bare']:
     target = response_list['bare'][key]
   return target

@@ -5,6 +5,7 @@ import random
 import os
 
 from sqlalchemy.orm.exc import NoResultFound
+from threading import Timer
 from lib.client import client
 from lib.models import QtAnimeGirl, Tag, session
 from hakase import config
@@ -12,7 +13,7 @@ from hakase import config
 # Channels where qtb is in progress
 ongoing_qtb = []
 
-async def get_new_girls(message):
+async def get_new_girls(message, params):
   anime_girl = QtAnimeGirl()
   new_girls = anime_girl.get_new_girls(config['image_directory'])
   await client.send_message(message.channel, "{} new girls added!".format(new_girls))
@@ -68,16 +69,38 @@ async def qtb(message, params):
     '{0} vs {1} - 0 - 0'.format(girls[0], girls[1])
   )
 
+  def finish():
+    global is_ongoing
+    is_ongoing = False
+
+  timer = Timer(3.0, finish)
+  timer.start()
+
   while is_ongoing:
-    action = await client.wait_for_message(channel= message.channel, check= lambda msg: msg.startswith('>vote'))
+    print(is_ongoing)
+    action = await client.wait_for_message(channel= message.channel, check= lambda msg: msg.content.startswith('>vote'))
     # Gets first digit
     # See: https://stackoverflow.com/a/20008559
-    action_vote = [char.isdigit() for char in action.content].index(True)
+    action_vote = int(action.content[[char.isdigit() for char in action.content].index(True)])
+    print('Action_vote')
+    print(action_vote)
     
     if action_vote in [1,2]:
+      print('True 1')
       if action.author.id not in voters or action_vote != voters[action.author.id]:
+        if action.author.id in voters:
+          votes[voters[action.author.id] - 1] -= 1
+        voters[action.author.id] = action_vote
+        print('Votes')
         votes[action_vote - 1] += 1
+        print(votes)
+        print('Voters')
+        print(voters)
     await client.edit_message(vote, new_content='{0} vs {1} - {2} - {3}'.format(girls[0],girls[1],votes[0],votes[1]))
+  
+  await client.send_message(message.channel, 'Qtb over')
+  
+
 
 
   
