@@ -21,10 +21,44 @@ async def get_new_girls(message, params):
 def _check_for_qtb_command(message):
   command = message.content.split(' ')[0]
 
-  if command in ['>vote', '>end']:
+  if command in ['>vote', '>end', '>name', '>tag', '>tags']:
     return True
   else:
     return False
+
+async def _name_girl(message, girls):
+  index = int(message.content[[char.isdigit() for char in message.content].index(True)]) - 1
+  girl = girls[index]
+
+  name = message.content[5:]
+
+  girl.name = name
+  session.commit()
+
+  await client.send_message(message.channel, 'Girl {0} now known as {1}!'.format(girl.id, girl.name))
+
+async def _get_tags(message, girls):
+  tags = []
+  index = int(message.content[[char.isdigit() for char in message.content].index(True)]) - 1
+  girl = girls[index]
+
+  for tag in girl.tags:
+    tags.append(tag.tag)
+  
+  await client.send_message(message.channel, '{0}\'s tags: {1}'.format(girl, ', '.join(tags)))
+
+async def _set_tags(message, girls):
+  index = int(message.content[[char.isdigit() for char in message.content].index(True)]) - 1
+  girl = girls[index]
+
+  split_content = message.content.split(' ')
+  tags = split_content[2].split(',')
+
+  for tag in tags:
+    girl.addTag(tag)
+
+  await client.send_message(message.channel, 'Tags {0} added to {1}'.format(', '.join(tags), girl)) 
+
 
 async def _get_girls(message, params= None):
   all_girls= []
@@ -143,6 +177,18 @@ async def qtb(message, params):
     )
 
     if not action:
+      continue
+    
+    if action.content.startswith('>name'):
+      await _name_girl(action, girls)
+      continue
+
+    if action.content.startswith('>tag '):
+      await _set_tags(action, girls)
+      continue
+
+    if action.content.startswith('>tags'):
+      await _get_tags(action, girls)
       continue
 
     if action.content.startswith('>end') and action.author.id == caller.id:
