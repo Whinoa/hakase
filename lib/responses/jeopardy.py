@@ -191,7 +191,7 @@ async def jeopardy(message,params):
   await client.send_typing(message.channel)
   await client.send_message(message.channel, 'This is Jeopardy!\nWith your host: Hakase!\nJoin the game with >join. You need 3 players to start.')
   participant_message = await client.send_message(message.channel, 'Playing: {}'.format(__map_to_mentions(players)))
-  for i in range(2):
+  for _ in range(2):
     join_message = await client.wait_for_message(channel=message.channel, content=">join")
     if join_message.author.id not in players:
       players[join_message.author.id] = {

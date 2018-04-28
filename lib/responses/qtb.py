@@ -3,9 +3,9 @@ import discord
 import datetime
 import random
 import os
+import time
 
 from sqlalchemy.orm.exc import NoResultFound
-from threading import Timer
 from lib.client import client
 from lib.models import QtAnimeGirl, Tag, session
 from hakase import config
@@ -20,7 +20,13 @@ async def get_new_girls(message, params):
 
 async def qtb(message, params):
   if message.channel in ongoing_qtb:
+    warning = await client.send_message(message.channel, 'One QTB per channel at a time please.')
+
+    await asyncio.sleep(10)
+    client.delete_message(warning)
+
     return
+
   ongoing_qtb.append(message.channel)
 
   caller= message.author
@@ -69,49 +75,70 @@ async def qtb(message, params):
     '{0} vs {1} - 0 - 0'.format(girls[0], girls[1])
   )
 
-  def finish():
-    global is_ongoing
-    is_ongoing = False
-
-  timer = Timer(3.0, finish)
-  timer.start()
+  # timeout = time.time() + 60 * 5 # 5 minutes from now
+  timeout = time.time() + 10
 
   while is_ongoing:
-    print(is_ongoing)
-    action = await client.wait_for_message(channel= message.channel, check= lambda msg: msg.content.startswith('>vote'))
+    # Check if timed out
+    if timeout < time.time():
+      break
+    action = await client.wait_for_message(
+      channel= message.channel,
+      check= lambda msg:
+        msg.content.startswith('>vote') or (msg.content.startswith('>end') and msg.author.id == caller.id),
+      timeout=5
+    )
+
+    if not action:
+      continue
+
+    if action.content.startswith('>end'):
+      break
+
     # Gets first digit
     # See: https://stackoverflow.com/a/20008559
-    action_vote = int(action.content[[char.isdigit() for char in action.content].index(True)])
-    print('Action_vote')
-    print(action_vote)
+    try:
+      action_vote = int(action.content[[char.isdigit() for char in action.content].index(True)])
+    except ValueError:
+      continue
     
     if action_vote in [1,2]:
-      print('True 1')
       if action.author.id not in voters or action_vote != voters[action.author.id]:
         if action.author.id in voters:
           votes[voters[action.author.id] - 1] -= 1
         voters[action.author.id] = action_vote
-        print('Votes')
         votes[action_vote - 1] += 1
-        print(votes)
-        print('Voters')
-        print(voters)
     await client.edit_message(vote, new_content='{0} vs {1} - {2} - {3}'.format(girls[0],girls[1],votes[0],votes[1]))
   
-  await client.send_message(message.channel, 'Qtb over')
-  
+
+  draw = votes[0] == votes[1]
+
+  if not draw:
+    winner = 1 if max(votes[0], votes[1]) == votes[0] else 2
+    loser = 3 - winner
+    winner = girls[winner - 1]
+    loser = girls[loser - 1]
+
+    # Update ELO ratings
+    oldElo = winner.elo
+    winner.updateELO(loser.elo, 1)
+    loser.updateELO(winner.elo, 0)
+
+    # Print results
+    await client.send_message(message.channel, '{0} wins! Her rating is now {1}(+{2})'.format(
+      winner,winner.elo, winner.elo - oldElo
+    ))
+
+  else:
+    oldElo1 = girls[0].elo
+    oldElo2 = girls[1].elo
+
+    girls[0].updateELO(girls[1].elo, 0.5)
+    girls[1].updateELO(girls[0].elo, 0.5)
 
 
-
-  
-
-
-# QTB
-# 1. Send start message
-# 2. Get 2 random qts or get them from tags
-# 3. Send qts
-# 4. Start voting
-# 5. Collect votes
-# 6. End battle
-# 7. Update girl scores
-# 8. Present results 
+    await client.send_message(message.channel, 'It\'s a tie! QTR change: {0} ({1}) {2} ({3})'.format(
+      girls[0], girls[0].elo - oldElo1, girls[1], girls[1].elo - oldElo2
+    ))
+    
+  ongoing_qtb.remove(message.channel)
