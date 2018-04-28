@@ -18,6 +18,14 @@ async def get_new_girls(message, params):
   new_girls = anime_girl.get_new_girls(config['image_directory'])
   await client.send_message(message.channel, "{} new girls added!".format(new_girls))
 
+def _check_for_qtb_command(message):
+  command = message.content.split(' ')[0]
+
+  if command in ['>vote', '>end']:
+    return True
+  else:
+    return False
+
 async def _get_girls(message, params= None):
   all_girls= []
 
@@ -130,18 +138,17 @@ async def qtb(message, params):
       break
     action = await client.wait_for_message(
       channel= message.channel,
-      check= lambda msg:
-        msg.content.startswith('>vote') or (msg.content.startswith('>end') and msg.author.id == caller.id),
+      check= _check_for_qtb_command,
       timeout=5
     )
 
     if not action:
       continue
 
-    if action.content.startswith('>end'):
+    if action.content.startswith('>end') and action.author.id == caller.id:
       break
 
-    result = await _parse_vote(message, voters, votes)
+    result = await _parse_vote(action, voters, votes)
 
     if result:
       voters = result['voters']
