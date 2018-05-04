@@ -6,8 +6,10 @@ import os
 import time
 
 from sqlalchemy.orm.exc import NoResultFound
+from lib.utils.str_get_first_number import str_get_first_number
 from lib.client import client
 from lib.models import QtAnimeGirl, Tag, session
+
 from hakase import config
 
 # Channels where qtb is in progress
@@ -27,7 +29,7 @@ def _check_for_qtb_command(message):
     return False
 
 async def _name_girl(message, girls):
-  index = int(message.content[[char.isdigit() for char in message.content].index(True)]) - 1
+  index = str_get_first_number(message.content) - 1
   girl = girls[index]
 
   name = message.content[5:]
@@ -39,7 +41,7 @@ async def _name_girl(message, girls):
 
 async def _get_tags(message, girls):
   tags = []
-  index = int(message.content[[char.isdigit() for char in message.content].index(True)]) - 1
+  index = str_get_first_number(message.content) - 1
   girl = girls[index]
 
   for tag in girl.tags:
@@ -48,7 +50,7 @@ async def _get_tags(message, girls):
   await client.send_message(message.channel, '{0}\'s tags: {1}'.format(girl, ', '.join(tags)))
 
 async def _set_tags(message, girls):
-  index = int(message.content[[char.isdigit() for char in message.content].index(True)]) - 1
+  index = str_get_first_number(message.content) - 1
   girl = girls[index]
 
   split_content = message.content.split(' ')
@@ -85,9 +87,7 @@ async def _get_girls(message, params= None):
 
 async def _parse_vote(message, voters, votes):
     try:
-      # Gets first digit
-      # See: https://stackoverflow.com/a/20008559
-      vote = int(message.content[[char.isdigit() for char in message.content].index(True)])
+      vote = str_get_first_number(message.content)
     except ValueError:
       return None
     
