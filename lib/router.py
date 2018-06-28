@@ -6,6 +6,7 @@ from lib.responses import misc
 # from lib.responses import games
 from lib.responses import jeopardy
 from lib.responses import qtb
+from lib.responses import fortune
 
 importlib.reload(misc)
 # importlib.reload(games)
@@ -27,17 +28,16 @@ async def list_responses(message,params):
   return list
 
 response_list = {
-  '=': {
+  '>': {
     'rand': misc.rand,
     'jeopardy': jeopardy.jeopardy,
-    'help': list_responses
+    'help': list_responses,
+    # 'qtb': qtb.qtb,
+    # 'getnewgirls': qtb.get_new_girls
+    'fortune': fortune.fortune
   },
   '-':{
     'rand': misc.rand
-  },
-  '+':{
-    'qtb': qtb.qtb,
-    'getnewgirls': qtb.get_new_girls
   },
   'bare': {
     'ayy': misc.ayy
