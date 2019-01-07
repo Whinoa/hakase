@@ -19,6 +19,7 @@ config = json.load(f)
 async def on_ready():
   print('''Logged in as\n{0}\n{1}\n------
     '''.format(client.user.display_name, client.user.id))
+  importlib.reload(router)
 
 @client.event
 async def on_message(message):
@@ -26,7 +27,8 @@ async def on_message(message):
     importlib.reload(router)
     await client.send_message(message.channel,'Responses reloaded!')
     print(router.response_list)
-  elif not message.author.bot: 
+    await router.list_responses(message,{})
+  elif not message.author.bot:
     await router.respond(message)
 
 client.run(config['client_key'])
