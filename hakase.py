@@ -28,7 +28,7 @@ async def on_message(message):
     await client.send_message(message.channel,'Responses reloaded!')
     print(router.response_list)
     await router.list_responses(message,{})
-  elif not message.author.bot: 
+  elif not message.author.bot:
     await router.respond(message)
 
 client.run(config['client_key'])
