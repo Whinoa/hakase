@@ -15,5 +15,6 @@ girl_tag_association_table = Table('girldatabase_qtanimegirl_tags',Base.metadata
 
 from .qt_anime_girl import QtAnimeGirl
 from .tag import Tag
+from .note import Note
 
 metadata.create_all(engine)
