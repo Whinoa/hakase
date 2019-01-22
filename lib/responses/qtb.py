@@ -21,9 +21,10 @@ async def get_new_girls(message, params):
   await client.send_message(message.channel, "{} new girls added!".format(new_girls))
 
 def _check_for_qtb_command(message):
-  command = message.content.split(' ')[0]
+  command = message.content[:2].lower()
 
-  if command in ['>vote', '>end', '>name', '>tag', '>tags']:
+  # Only check first 2 characters here
+  if command in ['>v', '>e', '>n', '>t', '>t']:
     return True
   else:
     return False
@@ -46,7 +47,7 @@ async def _get_tags(message, girls):
 
   for tag in girl.tags:
     tags.append(tag.tag)
-  
+
   await client.send_message(message.channel, '{0}\'s tags: {1}'.format(girl, ', '.join(tags)))
 
 async def _set_tags(message, girls):
@@ -59,7 +60,7 @@ async def _set_tags(message, girls):
   for tag in tags:
     girl.addTag(tag)
 
-  await client.send_message(message.channel, 'Tags {0} added to {1}'.format(', '.join(tags), girl)) 
+  await client.send_message(message.channel, 'Tags {0} added to {1}'.format(', '.join(tags), girl))
 
 
 async def _get_girls(message, params= None):
@@ -75,7 +76,7 @@ async def _get_girls(message, params= None):
             all_girls.append(girl)
       except NoResultFound:
         pass
-  
+
     if len(all_girls < 2):
       await client.send_message(message.channel,
         "Couldn't find enough girls with provided tags, using random girls")
@@ -90,24 +91,26 @@ async def _parse_vote(message, voters, votes):
       vote = str_get_first_number(message.content)
     except ValueError:
       return None
-    
+
     if vote in [1,2]:
       if message.author.id not in voters or vote != voters[message.author.id]:
         if message.author.id in voters:
           votes[voters[message.author.id] - 1] -= 1
         voters[message.author.id] = vote
         votes[vote - 1] += 1
-    
+
     return {'votes': votes, 'voters': voters}
 
 async def _resolve_battle(message, votes, girls):
   draw = votes[0] == votes[1]
 
   if not draw:
-    winner = 1 if max(votes[0], votes[1]) == votes[0] else 2
-    loser = 3 - winner
-    winner = girls[winner - 1]
-    loser = girls[loser - 1]
+    # Winners index
+    winner = 0 if max(votes[0], votes[1]) == votes[0] else 1
+    # Losers index
+    loser = 1 - winner
+    winner = girls[winner]
+    loser = girls[loser]
 
     # Update ELO ratings
     oldElo = winner.elo
@@ -130,8 +133,8 @@ async def _resolve_battle(message, votes, girls):
     await client.send_message(message.channel, 'It\'s a tie! QTR change: {0} ({1}) {2} ({3})'.format(
       girls[0], girls[0].elo - oldElo1, girls[1], girls[1].elo - oldElo2
     ))
-    
-    
+
+
 
 async def qtb(message, params):
   if message.channel in ongoing_qtb:
@@ -149,7 +152,7 @@ async def qtb(message, params):
   votes= [0, 0]
   voters= {}
   is_ongoing= True
-      
+
   girls = await _get_girls(message, params)
 
   for girl in girls:
@@ -159,8 +162,8 @@ async def qtb(message, params):
       filename= girl.image,
       content= '{0} with a {1} ranking'.format(girl, girl.elo)
     )
-  
-  vote = await client.send_message(message.channel,
+
+  tally = await client.send_message(message.channel,
     '{0} vs {1} - 0 - 0'.format(girls[0], girls[1])
   )
 
@@ -168,7 +171,7 @@ async def qtb(message, params):
 
   while is_ongoing:
     # Check if timed out
-    if timeout < time.time():
+    if timeout < time.time() and len(votes) > 2:
       break
     action = await client.wait_for_message(
       channel= message.channel,
@@ -178,7 +181,7 @@ async def qtb(message, params):
 
     if not action:
       continue
-    
+
     if action.content.startswith('>name'):
       await _name_girl(action, girls)
       continue
@@ -200,7 +203,7 @@ async def qtb(message, params):
       voters = result['voters']
       votes  = result['votes']
 
-      await client.edit_message(vote, new_content='{0} vs {1} - {2} - {3}'.format(girls[0],girls[1],votes[0],votes[1]))
+      await client.edit_message(tally, new_content='{0} vs {1} - {2} - {3}'.format(girls[0],girls[1],votes[0],votes[1]))
 
   await _resolve_battle(message, votes, girls)
   ongoing_qtb.remove(message.channel)
