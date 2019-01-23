@@ -171,7 +171,7 @@ async def qtb(message, params):
 
   while is_ongoing:
     # Check if timed out
-    if timeout < time.time() and len(votes) > 2:
+    if timeout < time.time() and len(voters) > 1:
       break
     action = await client.wait_for_message(
       channel= message.channel,

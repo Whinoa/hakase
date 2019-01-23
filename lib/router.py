@@ -7,6 +7,7 @@ from lib.responses import jeopardy
 from lib.responses import qtb
 from lib.responses import fortune
 from lib.responses import note
+from lib.responses import weather
 
 importlib.reload(misc)
 importlib.reload(jeopardy)
@@ -36,7 +37,8 @@ response_list = {
     'qtb': qtb.qtb,
     'getnewgirls': qtb.get_new_girls,
     'fortune': fortune.fortune,
-    'note': note.note
+    'note': note.note,
+    'weather': weather.weather
   },
   '-':{
     'rand': misc.rand,
