@@ -159,7 +159,7 @@ async def qtb(message, params):
     await client.send_typing(message.channel)
     await client.send_file(message.channel,
       open(os.path.join(config['image_directory'], girl.image), 'rb'),
-      filename= 'spoiler_' + girl.image,
+      filename= 'SPOILER_' + girl.image,
       content= '||{0} with a {1} ranking||'.format(girl, girl.elo)
     )
 
