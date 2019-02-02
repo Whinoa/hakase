@@ -159,8 +159,8 @@ async def qtb(message, params):
     await client.send_typing(message.channel)
     await client.send_file(message.channel,
       open(os.path.join(config['image_directory'], girl.image), 'rb'),
-      filename= girl.image,
-      content= '{0} with a {1} ranking'.format(girl, girl.elo)
+      filename= 'spoiler_' + girl.image,
+      content= '||{0} with a {1} ranking||'.format(girl, girl.elo)
     )
 
   tally = await client.send_message(message.channel,
