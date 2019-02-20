@@ -33,7 +33,7 @@ async def _name_girl(message, girls):
   index = str_get_first_number(message.content) - 1
   girl = girls[index]
 
-  name = message.content[5:]
+  name = message.content[7:]
 
   girl.name = name
   session.commit()
@@ -122,7 +122,7 @@ async def _resolve_battle(message, votes, girls):
 
     # Print results
     await client.send_message(message.channel, '{0} wins! Her ranking is now #{1}({2})'.format(
-      winner,winner.get_ranking(),winner.get_ranking() - oldRanking 
+      winner,winner.get_ranking(),winner.get_ranking() - oldRanking
     ))
 
     if (winner_tier is not winner.get_tier()):
