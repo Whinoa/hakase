@@ -7,6 +7,24 @@ from .tag import Tag
 
 import os
 
+tiers = {
+    1300: 'Miracle of the Universe',
+    1250: 'Princess',
+    1200: 'Cinnamon bun',
+    1150: 'Miracle',
+    1100: 'Blessed',
+    1070: 'Lovely',
+    1050: 'Cute',
+    1020: 'Sempai',
+    1000: 'Kouhai',
+    950: 'Homely',
+    900: 'Childhood friend',
+    850: 'Still cute',
+    800: 'Kinda cute',
+    700: 'Eh',
+    0: 'Honorable mention'
+}
+
 class QtAnimeGirl(Base):
   __tablename__ = 'girldatabase_qtanimegirl'
 
@@ -44,6 +62,18 @@ class QtAnimeGirl(Base):
         new_girl_count += 1
     session.commit()
     return new_girl_count
+
+  def get_tier(self):
+    elo = self.elo
+
+    while elo not in tiers:
+        elo -= 1
+
+    return tiers[elo]
+
+  def get_ranking(self):
+      list = session.query(QtAnimeGirl).order_by(QtAnimeGirl.elo.desc()).all()
+      return list.index(self) + 1
 
   def updateELO(self,eloOpponent,score):
     expectedA = 1/(1+pow(10,((eloOpponent-self.elo)/400)))

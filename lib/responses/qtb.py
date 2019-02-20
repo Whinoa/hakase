@@ -112,26 +112,38 @@ async def _resolve_battle(message, votes, girls):
     winner = girls[winner]
     loser = girls[loser]
 
+    winner_tier = winner.get_tier()
+    loser_tier = loser.get_tier()
+
     # Update ELO ratings
-    oldElo = winner.elo
+    oldRanking = winner.get_ranking()
     winner.updateELO(loser.elo, 1)
     loser.updateELO(winner.elo, 0)
 
     # Print results
-    await client.send_message(message.channel, '{0} wins! Her rating is now {1}(+{2})'.format(
-      winner,winner.elo, winner.elo - oldElo
+    await client.send_message(message.channel, '{0} wins! Her ranking is now #{1}({2})'.format(
+      winner,winner.get_ranking(),winner.get_ranking() - oldRanking 
     ))
 
+    if (winner_tier is not winner.get_tier()):
+        await client.send_message(message.channel, '{0} has become "{1}"'.format(
+          winner, winner.get_tier())
+        )
+    if (loser_tier is not loser.get_tier()):
+        await client.send_message(message.channel, '{0} dropped a tier to "{1}"'.format(
+          loser, loser.get_tier())
+        )
+
   else:
-    oldElo1 = girls[0].elo
-    oldElo2 = girls[1].elo
+    oldRanking1 = girls[0].get_ranking()
+    oldRanking2 = girls[1].get_ranking()
 
     girls[0].updateELO(girls[1].elo, 0.5)
     girls[1].updateELO(girls[0].elo, 0.5)
 
 
-    await client.send_message(message.channel, 'It\'s a tie! QTR change: {0} ({1}) {2} ({3})'.format(
-      girls[0], girls[0].elo - oldElo1, girls[1], girls[1].elo - oldElo2
+    await client.send_message(message.channel, 'It\'s a tie! Rank change: {0} ({1}) {2} ({3})'.format(
+      girls[0], girls[0].get_ranking() - oldRanking1, girls[1], girls[1].get_ranking() - oldRanking2
     ))
 
 
@@ -160,7 +172,7 @@ async def qtb(message, params):
     await client.send_file(message.channel,
       open(os.path.join(config['image_directory'], girl.image), 'rb'),
       filename= 'SPOILER_' + girl.image,
-      content= '||{0} with a {1} ranking||'.format(girl, girl.elo)
+      content= '{0} ||(Rank #{1}) "{2}"-tier||'.format(girl, girl.get_ranking(), girl.get_tier())
     )
 
   tally = await client.send_message(message.channel,
