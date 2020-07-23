@@ -8,11 +8,11 @@ async def note(message,params):
 
   key = params[0]
   note_instance = Note()
-  if len(params) < 2: 
+  if len(params) < 2:
     found_note = note_instance.find(key)
     if (found_note):
-      await client.send_message(message.channel, found_note.content)
+      await message.channel.send(found_note.content)
     else:
-      await client.send_message(message.channel, "Nothing notable found!")
+      await message.channel.send("Nothing notable found!")
   else:
     note_instance.add(key, ' '.join(params[1:]))

@@ -9,4 +9,4 @@ async def fortune(message, params):
   if request.status_code != 200: return
 
   fortune = request.json()['fortune']
-  await client.send_message(message.channel, fortune)
+  await message.channel.send(fortune)

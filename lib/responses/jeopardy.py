@@ -189,8 +189,8 @@ async def jeopardy(message,params):
   categories = __get_clues()
   finished = False
   await client.send_typing(message.channel)
-  await client.send_message(message.channel, 'This is Jeopardy!\nWith your host: Hakase!\nJoin the game with >join. You need 3 players to start.')
-  participant_message = await client.send_message(message.channel, 'Playing: {}'.format(__map_to_mentions(players)))
+  await message.channel.send('This is Jeopardy!\nWith your host: Hakase!\nJoin the game with >join. You need 3 players to start.')
+  participant_message = await message.channel.send('Playing: {}'.format(__map_to_mentions(players)))
   for _ in range(2):
     join_message = await client.wait_for_message(channel=message.channel, content=">join")
     if join_message.author.id not in players:
@@ -199,10 +199,10 @@ async def jeopardy(message,params):
         'points': 0,
         'name': checkNickname(join_message.author)
       }
-      await client.send_message(message.channel, '{} has joined the game'.format(join_message.author.mention))
+      await message.channel.send('{} has joined the game'.format(join_message.author.mention))
       await client.edit_message(participant_message, 'Playing: {}'.format(__map_to_mentions(players)))
     await client.delete_message(join_message)
-  await client.send_message(message.channel, 'Starting game!')
+  await message.channel.send('Starting game!')
   def get_selection(msg):
     regex = r"\d\s(for)\s(200|400|600|800|1000)"
     match = re.match(regex,msg.content)
@@ -218,46 +218,46 @@ async def jeopardy(message,params):
     await getBoard(categories, selection_priority, message.channel, players)
     category_selection = await client.wait_for_message(channel=message.channel, check=lambda x: get_selection(x) == True, timeout= 120)
     if not category_selection:
-      await client.send_message(message.channel, 'You took too long, baka')
+      await message.channel.send('You took too long, baka')
       break
     choice = messageToClue(category_selection, categories)
     if 'solved' in choice['clue']:
-      await client.send_message(message.channel, 'We already did that one, baka')
+      await message.channel.send('We already did that one, baka')
       continue
 
     choice['clue']['solved'] = 'solved'
     choice['question'].add_field(name=choice['category']['title'].title(), value=choice['clue']['question'])
-    await client.send_message(message.channel, embed=choice['question'])
-    await client.send_message(message.channel, 'Buzz in with >beep, you have 20 seconds to buzz in!')
+    await message.channel.send(embed=choice['question'])
+    await message.channel.send('Buzz in with >beep, you have 20 seconds to buzz in!')
 
     guesser = await getGuesser(players, message.channel)
     if not guesser:
-      await client.send_message(message.channel, "Time's up! The correct answer was: '{}'!".format(choice['clue']['answer']))
+      await message.channel.send("Time's up! The correct answer was: '{}'!".format(choice['clue']['answer']))
       continue
 
-    await client.send_message(message.channel, 'You have 20 seconds!')
+    await message.channel.send('You have 20 seconds!')
 
     guess = await getGuess(guesser, message.channel)
 
     if not guess:
       #if current contestant doesn't answer, ask others
-      await client.send_message(message.channel, "Time's up! You lose {} points".format(choice['clue']['value']))
+      await message.channel.send("Time's up! You lose {} points".format(choice['clue']['value']))
       players[guesser.author.id]['points'] -= choice['clue']['value']
-      await client.send_message(message.channel, 'You now have {} points!'.format(players[guesser.author.id]['points']))
-      await client.send_message(message.channel, 'Would anyone else try their luck? You have 20 seconds to buzz in!')
+      await message.channel.send('You now have {} points!'.format(players[guesser.author.id]['points']))
+      await message.channel.send('Would anyone else try their luck? You have 20 seconds to buzz in!')
 
       guesser = await getGuesser(players, message.channel)
       if not guesser:
-        await client.send_message(message.channel, "Time's up! The correct answer was: '{}'!".format(choice['clue']['answer']))
+        await message.channel.send("Time's up! The correct answer was: '{}'!".format(choice['clue']['answer']))
         continue
 
-      await client.send_message(message.channel, 'You have 20 seconds to give your answer!')
+      await message.channel.send('You have 20 seconds to give your answer!')
 
       guess = await getGuess(guesser, message.channel)
       if not guess:
-        await client.send_message(message.channel, "Time's up! You lose {} points".format(choice['clue']['value']))
+        await message.channel.send("Time's up! You lose {} points".format(choice['clue']['value']))
         players[guesser.author.id]['points'] -= choice['clue']['value']
-        await client.send_message(message.channel, "The correct answer was '{}'!".format(choice['clue']['answer']))
+        await message.channel.send("The correct answer was '{}'!".format(choice['clue']['answer']))
         continue
 
       result = await checkGuess(players, guess, choice['clue'], message.channel, selection_priority)
@@ -265,7 +265,7 @@ async def jeopardy(message,params):
         selection_priority = guess.author
         continue
       if result['answer'] == "incorrect":
-        await client.send_message(message.channel, "The correct answer was '{}'!".format(choice['clue']['answer']))
+        await message.channel.send("The correct answer was '{}'!".format(choice['clue']['answer']))
         continue
 
     result = await checkGuess(players, guess, choice['clue'], message.channel, selection_priority)
@@ -273,22 +273,22 @@ async def jeopardy(message,params):
       selection_priority = guess.author
       continue
     if result['answer'] == "incorrect":
-      await client.send_message(message.channel, "Does anyone else know the answer? You have 5 seconds to buzz in !")
+      await message.channel.send("Does anyone else know the answer? You have 5 seconds to buzz in !")
       #TODO make hakase ask others after incorrect message
       guesser = False
       guesser = await getGuesser(players, message.channel, 5)
 
       if not guesser:
-        await client.send_message(message.channel, "Time's up! The correct answer was: '{}'!".format(choice['clue']['answer']))
+        await message.channel.send("Time's up! The correct answer was: '{}'!".format(choice['clue']['answer']))
         continue
 
-      await client.send_message(message.channel, 'You have 20 seconds to give your answer!')
+      await message.channel.send('You have 20 seconds to give your answer!')
       guess = await getGuess(guesser, message.channel)
 
       if not guess:
-        await client.send_message(message.channel, "Time's up! You lose {} points".format(choice['clue']['value']))
+        await message.channel.send("Time's up! You lose {} points".format(choice['clue']['value']))
         players[guesser.author.id]['points'] -= choice['clue']['value']
-        await client.send_message(message.channel, "The correct answer was '{}'!".format(choice['clue']['answer']))
+        await message.channel.send("The correct answer was '{}'!".format(choice['clue']['answer']))
         continue
 
       result = await checkGuess(players, guess, choice['clue'], message.channel, selection_priority)
@@ -296,7 +296,7 @@ async def jeopardy(message,params):
         selection_priority = guess.author
         continue
       if result['answer'] == "incorrect":
-        await client.send_message(message.channel, "The correct answer was '{}'!".format(choice['clue']['answer']))
+        await message.channel.send("The correct answer was '{}'!".format(choice['clue']['answer']))
 
-  await client.send_message(message.channel, "Game over!")
-  await client.send_message(message.channel, "Your winner is {} with {} points! Congratulations!".format(getWinner(players)['contestant'], getWinner(players)['score']))
+  await message.channel.send("Game over!")
+  await message.channel.send("Your winner is {} with {} points! Congratulations!".format(getWinner(players)['contestant'], getWinner(players)['score']))

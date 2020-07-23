@@ -18,7 +18,7 @@ ongoing_qtb = []
 async def get_new_girls(message, params):
   anime_girl = QtAnimeGirl()
   new_girls = anime_girl.get_new_girls(config['image_directory'])
-  await client.send_message(message.channel, "{} new girls added!".format(new_girls))
+  await message.channel.send("{} new girls added!".format(new_girls))
 
 def _check_for_qtb_command(message):
   command = message.content[:2].lower()
@@ -38,7 +38,7 @@ async def _name_girl(message, girls):
   girl.name = name
   session.commit()
 
-  await client.send_message(message.channel, 'Girl {0} now known as {1}!'.format(girl.id, girl.name))
+  await message.channel.send('Girl {0} now known as {1}!'.format(girl.id, girl.name))
 
 async def _get_tags(message, girls):
   tags = []
@@ -48,7 +48,7 @@ async def _get_tags(message, girls):
   for tag in girl.tags:
     tags.append(tag.tag)
 
-  await client.send_message(message.channel, '{0}\'s tags: {1}'.format(girl, ', '.join(tags)))
+  await message.channel.send('{0}\'s tags: {1}'.format(girl, ', '.join(tags)))
 
 async def _set_tags(message, girls):
   index = str_get_first_number(message.content) - 1
@@ -60,7 +60,7 @@ async def _set_tags(message, girls):
   for tag in tags:
     girl.addTag(tag)
 
-  await client.send_message(message.channel, 'Tags {0} added to {1}'.format(', '.join(tags), girl))
+  await message.channel.send('Tags {0} added to {1}'.format(', '.join(tags), girl))
 
 
 async def _get_girls(message, params= None):
@@ -121,16 +121,16 @@ async def _resolve_battle(message, votes, girls):
     loser.updateELO(winner.elo, 0)
 
     # Print results
-    await client.send_message(message.channel, '{0} wins! Her ranking is now #{1}({2})'.format(
+    await message.channel.send('{0} wins! Her ranking is now #{1}({2})'.format(
       winner,winner.get_ranking(),winner.get_ranking() - oldRanking
     ))
 
     if (winner_tier is not winner.get_tier()):
-        await client.send_message(message.channel, '{0} has become "{1}"'.format(
+        await message.channel.send('{0} has become "{1}"'.format(
           winner, winner.get_tier())
         )
     if (loser_tier is not loser.get_tier()):
-        await client.send_message(message.channel, '{0} dropped a tier to "{1}"'.format(
+        await message.channel.send('{0} dropped a tier to "{1}"'.format(
           loser, loser.get_tier())
         )
 
@@ -142,7 +142,7 @@ async def _resolve_battle(message, votes, girls):
     girls[1].updateELO(girls[0].elo, 0.5)
 
 
-    await client.send_message(message.channel, 'It\'s a tie! Rank change: {0} ({1}) {2} ({3})'.format(
+    await message.channel.send('It\'s a tie! Rank change: {0} ({1}) {2} ({3})'.format(
       girls[0], girls[0].get_ranking() - oldRanking1, girls[1], girls[1].get_ranking() - oldRanking2
     ))
 
@@ -150,7 +150,7 @@ async def _resolve_battle(message, votes, girls):
 
 async def qtb(message, params):
   if message.channel in ongoing_qtb:
-    warning = await client.send_message(message.channel, 'One QTB per channel at a time please.')
+    warning = await message.channel.send('One QTB per channel at a time please.')
 
     await asyncio.sleep(10)
     client.delete_message(warning)

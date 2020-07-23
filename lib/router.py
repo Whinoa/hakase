@@ -24,7 +24,7 @@ async def list_responses(message,params):
         list += '{}\n'.format(response)
   list += '```'
 
-  await client.send_message(message.channel, list)
+  await message.channel.send(list)
   return list
 
 response_list = {
@@ -71,4 +71,4 @@ async def respond(message):
 
   function = route(params[0])
   if function:
-    await function(message,params[1:])
+    await function(message, params[1:])

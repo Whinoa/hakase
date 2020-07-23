@@ -8,14 +8,14 @@ async def rand(message, params):
     mention = message.author.mention
     result = random.randint(0, max)
     response = '{} rolled **{}**'.format(mention, result)
-    await client.send_message(message.channel, response)
+    await message.channel.send(response)
 
     return response
 
 async def ayy(message, params):
     response = 'lmao' + message.content[3:]
 
-    await client.send_message(message.channel, response)
+    await message.channel.send(response)
 
 async def avatar(message, params):
     for user in message.mentions:
@@ -36,11 +36,11 @@ async def e(message, params):
             reply = message.author.mention + ' did it :unamused: :gun:'
         else:
             reply = client.user.mention + ' did it :unamused: :gun:'
-            
-    await client.send_message(message.channel, reply)
+
+    await message.channel.send(reply)
 
 async def turtle(message, params):
-    await client.send_message(message.channel, '''```
+    await message.channel.send('''```
   _
  (*\.-.
   \/___\_

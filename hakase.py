@@ -25,9 +25,9 @@ async def on_ready():
 async def on_message(message):
   if(message.content== '>reload'):
     importlib.reload(router)
-    await client.send_message(message.channel,'Responses reloaded!')
+    await message.channel.send('Responses reloaded!')
     print(router.response_list)
-    await router.list_responses(message,{})
+    await router.list_responses(message, {})
   elif not message.author.bot:
     await router.respond(message)
 

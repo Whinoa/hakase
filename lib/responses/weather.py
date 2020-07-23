@@ -22,4 +22,4 @@ async def weather(message, params):
     #Finish code block
     weather += '```'
 
-    await client.send_message(message.channel, weather)
+    await message.channel.send(weather)
