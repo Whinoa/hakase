@@ -19,11 +19,11 @@ async def ayy(message, params):
 
 async def avatar(message, params):
     for user in message.mentions:
-        await client.send_message(message.channel,user.avatar_url)
+        await message.channel.send(user.avatar_url)
 
 async def choose(message, params):
     options = message.content[7:].split(';')
-    await client.send_message(message.channel,"I chose `"+ random.choice(options) +"`")
+    await message.channel.send("I chose `"+ random.choice(options) +"`")
 
 async def e(message, params):
     arguments = message.content.split(' ')
