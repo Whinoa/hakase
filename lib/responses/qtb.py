@@ -1,4 +1,4 @@
-import asyncio
+import asyncio 
 import discord
 import datetime
 import random
@@ -23,7 +23,8 @@ async def get_new_girls(message, params):
   await message.channel.send("{} new girls added!".format(new_girls))
 
 def _check_for_qtb_command(channel, message):
-  if (message.channel.id != channel.id) return
+  if message.channel.id != channel.id:
+    return
 
   command = message.content[:2].lower()
 
@@ -172,8 +173,8 @@ async def qtb(message, params):
   girls = await _get_girls(message, params)
 
   for girl in girls:
-    await message.channel.typing()
-    await message.channel('{0} ||(Rank #{1}) "{2}"-tier||'.format(girl, girl.get_ranking(), girl.get_tier()),
+    message.channel.typing()
+    await message.channel.send('{0} ||(Rank #{1}) "{2}"-tier||'.format(girl, girl.get_ranking(), girl.get_tier()),
     file=discord.File(
       open(os.path.join(config['image_directory'], girl.image), 'rb'),
       filename= 'SPOILER_' + girl.image
@@ -192,7 +193,7 @@ async def qtb(message, params):
       break
     action = await client.wait_for(
       'message',
-      check= partial(message.channel, _check_for_qtb_command),
+      check= partial(_check_for_qtb_command, message.channel),
       timeout=5
     )
 
