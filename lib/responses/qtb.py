@@ -5,6 +5,8 @@ import random
 import os
 import time
 
+from functools import partial
+
 from sqlalchemy.orm.exc import NoResultFound
 from lib.utils.str_get_first_number import str_get_first_number
 from lib.client import client
@@ -20,7 +22,9 @@ async def get_new_girls(message, params):
   new_girls = anime_girl.get_new_girls(config['image_directory'])
   await message.channel.send("{} new girls added!".format(new_girls))
 
-def _check_for_qtb_command(message):
+def _check_for_qtb_command(channel, message):
+  if (message.channel.id != channel.id) return
+
   command = message.content[:2].lower()
 
   # Only check first 2 characters here
@@ -78,7 +82,7 @@ async def _get_girls(message, params= None):
         pass
 
     if len(all_girls < 2):
-      await client.send_message(message.channel,
+      await message.channel.send(
         "Couldn't find enough girls with provided tags, using random girls")
       all_girls= session.query(QtAnimeGirl).all()
   else:
@@ -153,7 +157,7 @@ async def qtb(message, params):
     warning = await message.channel.send('One QTB per channel at a time please.')
 
     await asyncio.sleep(10)
-    client.delete_message(warning)
+    warning.delete()
 
     return
 
@@ -168,14 +172,15 @@ async def qtb(message, params):
   girls = await _get_girls(message, params)
 
   for girl in girls:
-    await client.send_typing(message.channel)
-    await client.send_file(message.channel,
+    await message.channel.typing()
+    await message.channel('{0} ||(Rank #{1}) "{2}"-tier||'.format(girl, girl.get_ranking(), girl.get_tier()),
+    file=discord.File(
       open(os.path.join(config['image_directory'], girl.image), 'rb'),
-      filename= 'SPOILER_' + girl.image,
-      content= '{0} ||(Rank #{1}) "{2}"-tier||'.format(girl, girl.get_ranking(), girl.get_tier())
+      filename= 'SPOILER_' + girl.image
     )
+  )
 
-  tally = await client.send_message(message.channel,
+  tally = await message.channel.send(
     '{0} vs {1} - 0 - 0'.format(girls[0], girls[1])
   )
 
@@ -185,9 +190,9 @@ async def qtb(message, params):
     # Check if timed out
     if timeout < time.time() and len(voters) > 1:
       break
-    action = await client.wait_for_message(
-      channel= message.channel,
-      check= _check_for_qtb_command,
+    action = await client.wait_for(
+      'message',
+      check= partial(message.channel, _check_for_qtb_command),
       timeout=5
     )
 
@@ -215,7 +220,7 @@ async def qtb(message, params):
       voters = result['voters']
       votes  = result['votes']
 
-      await client.edit_message(tally, new_content='{0} vs {1} - {2} - {3}'.format(girls[0],girls[1],votes[0],votes[1]))
+      await tally.edit(content='{0} vs {1} - {2} - {3}'.format(girls[0],girls[1],votes[0],votes[1]))
 
   await _resolve_battle(message, votes, girls)
   ongoing_qtb.remove(message.channel)
